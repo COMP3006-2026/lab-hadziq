@@ -1,0 +1,54 @@
+# =========================
+# Processing (Java mode)
+# =========================
+
+# Exported applications created by Processing's "Export Application"
+application.linux*/
+application.macosx*/
+application.windows*/
+application.windows32*/
+application.windows64*/
+
+# Common build/export folders (if you export or build via scripts)
+export/
+build/
+dist/
+out/
+
+# If you ever use external Java tooling
+*.class
+*.jar
+
+# Logs / temporary
+*.log
+
+# =========================
+# OS junk
+# =========================
+
+# macOS
+.DS_Store
+._*
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux / editor backups
+*~
+*.swp
+*.swo
+
+# =========================
+# IDE/editor metadata
+# =========================
+.vscode/
+.idea/
+*.iml
+.project
+.classpath
+.settings/
