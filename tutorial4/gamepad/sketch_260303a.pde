@@ -1,5 +1,8 @@
-// Gamepad Circle Controller - Robust Version
-// Requires: GameControlPlus library
+// ============================================
+//  GAMEPAD DIAGNOSTIC TOOL
+//  Run this first to identify your controller
+//  axes and button names
+// ============================================
 
 import org.gamecontrolplus.gui.*;
 import org.gamecontrolplus.*;
@@ -7,136 +10,182 @@ import net.java.games.input.*;
 
 ControlIO control;
 ControlDevice gamepad;
-ControlSlider axisLX, axisLY;
 
-float circleX, circleY;
-float circleSize = 60;
-float speed = 4;
-
-ArrayList<float[]> trail = new ArrayList<float[]>();
-int maxTrail = 30;
+int selectedDeviceIndex = 0;
+boolean deviceFound = false;
 
 void setup() {
   size(800, 600);
-  circleX = width / 2;
-  circleY = height / 2;
+  textFont(createFont("Courier New", 13));
 
   control = ControlIO.getInstance(this);
+  int total = control.getNumberOfDevices();
 
-  // Try each available device until we find one with analog axes
-  int numDevices = control.getNumberOfDevices();
-  println("Total devices found: " + numDevices);
+  println("===========================================");
+  println("  DEVICES FOUND: " + total);
+  println("===========================================");
 
-  for (int i = 0; i < numDevices; i++) {
+  for (int i = 0; i < total; i++) {
     try {
-      ControlDevice dev = control.getDevice(i);
-      println("Device " + i + ": " + dev.getName());
-
-      // Look for a device that has at least 2 sliders (analog axes)
-      if (dev.getNumberOfSliders() >= 2) {
-        gamepad = dev;
-        axisLX = gamepad.getSlider(0);
-        axisLY = gamepad.getSlider(1);
-        println(">>> Using device: " + gamepad.getName());
-        println("    Axis 0: " + axisLX.getName());
-        println("    Axis 1: " + axisLY.getName());
-        break;
-      }
+      ControlDevice d = control.getDevice(i);
+      println("[" + i + "] " + d.getName()
+        + " | Sliders: " + d.getNumberOfSliders()
+        + " | Buttons: " + d.getNumberOfButtons());
     }
     catch (Exception e) {
-      println("Skipping device " + i + ": " + e.getMessage());
+      println("[" + i + "] FAILED: " + e.getMessage());
     }
   }
 
-  if (gamepad == null) {
-    println("No suitable gamepad found — keyboard fallback active (Arrow keys / WASD).");
+  // Auto-pick the device with the most sliders (most likely your gamepad)
+  int maxSliders = 0;
+  for (int i = 0; i < total; i++) {
+    try {
+      ControlDevice d = control.getDevice(i);
+      if (d.getNumberOfSliders() > maxSliders) {
+        maxSliders = d.getNumberOfSliders();
+        selectedDeviceIndex = i;
+      }
+    }
+    catch (Exception e) {}
   }
 
-  smooth();
+  try {
+    gamepad = control.getDevice(selectedDeviceIndex);
+    deviceFound = true;
+    println("\n>>> Auto-selected: [" + selectedDeviceIndex + "] " + gamepad.getName());
+    println("===========================================");
+    println("  SLIDERS (Analog Axes)");
+    println("===========================================");
+    for (int i = 0; i < gamepad.getNumberOfSliders(); i++) {
+      println("  Slider[" + i + "] name: " + gamepad.getSlider(i).getName());
+    }
+    println("===========================================");
+    println("  BUTTONS");
+    println("===========================================");
+    for (int i = 0; i < gamepad.getNumberOfButtons(); i++) {
+      println("  Button[" + i + "] name: " + gamepad.getButton(i).getName());
+    }
+    println("===========================================");
+  }
+  catch (Exception e) {
+    println("Could not open device: " + e.getMessage());
+  }
 }
 
 void draw() {
   background(20, 20, 30);
-  drawGrid();
 
-  float dx = 0, dy = 0;
+  // ── Title ──
+  fill(200, 230, 255);
+  textSize(16);
+  textAlign(CENTER);
+  text("GAMEPAD DIAGNOSTIC", width/2, 30);
 
-  // Gamepad input
-  if (gamepad != null && axisLX != null && axisLY != null) {
-    float lx = axisLX.getValue();
-    float ly = axisLY.getValue();
-    float deadZone = 0.12;
-    if (abs(lx) > deadZone) dx = lx * speed;
-    if (abs(ly) > deadZone) dy = ly * speed;
+  textSize(12);
+  fill(120, 180, 255);
+  text("Move sticks, press buttons — watch the live values below", width/2, 52);
+
+  if (!deviceFound) {
+    fill(255, 100, 100);
+    textAlign(CENTER);
+    text("No gamepad detected. Check connection and restart sketch.", width/2, height/2);
+    return;
   }
 
-  // Keyboard fallback
-  if (keyPressed) {
-    if (keyCode == LEFT  || key == 'a' || key == 'A') dx = -speed;
-    if (keyCode == RIGHT || key == 'd' || key == 'D') dx =  speed;
-    if (keyCode == UP    || key == 'w' || key == 'W') dy = -speed;
-    if (keyCode == DOWN  || key == 's' || key == 'S') dy =  speed;
-  }
+  // ── Device name ──
+  fill(255, 220, 80);
+  textAlign(LEFT);
+  textSize(13);
+  text("Device: " + gamepad.getName(), 20, 85);
 
-  // Update position with edge wrapping
-  circleX = (circleX + dx + width  + circleSize) % (width  + circleSize);
-  circleY = (circleY + dy + height + circleSize) % (height + circleSize);
-
-  // Trail
-  trail.add(new float[]{circleX, circleY});
-  if (trail.size() > maxTrail) trail.remove(0);
-
-  for (int i = 0; i < trail.size(); i++) {
-    float alpha = map(i, 0, trail.size(), 0, 120);
-    float sz    = map(i, 0, trail.size(), 10, circleSize * 0.8);
-    noStroke();
-    fill(80, 160, 255, alpha);
-    ellipse(trail.get(i)[0], trail.get(i)[1], sz, sz);
-  }
-
-  drawCircle(circleX, circleY);
-  drawHUD(dx, dy);
-}
-
-void drawCircle(float x, float y) {
-  for (int i = 4; i > 0; i--) {
-    noStroke();
-    fill(80, 160, 255, 30);
-    ellipse(x, y, circleSize + i * 12, circleSize + i * 12);
-  }
-  fill(80, 160, 255);
-  stroke(200, 230, 255);
-  strokeWeight(2);
-  ellipse(x, y, circleSize, circleSize);
-  noStroke();
-  fill(255, 255, 255, 80);
-  ellipse(x - circleSize * 0.15, y - circleSize * 0.2, circleSize * 0.35, circleSize * 0.25);
-}
-
-void drawGrid() {
-  stroke(255, 255, 255, 20);
-  strokeWeight(1);
-  int spacing = 50;
-  for (int x = 0; x < width;  x += spacing) line(x, 0, x, height);
-  for (int y = 0; y < height; y += spacing) line(0, y, width, y);
-  stroke(255, 255, 255, 60);
-  line(width/2, 0, width/2, height);
-  line(0, height/2, width, height/2);
-}
-
-void drawHUD(float dx, float dy) {
-  noStroke();
-  fill(0, 0, 0, 140);
-  rect(10, 10, 260, 110, 8);
+  // ── Sliders / Analog Axes ──
   fill(200, 230, 255);
   textSize(13);
-  textAlign(LEFT, TOP);
-  String deviceName = (gamepad != null) ? gamepad.getName() : "None";
-  if (deviceName.length() > 22) deviceName = deviceName.substring(0, 22) + "…";
-  text("Gamepad : " + deviceName,              20, 20);
-  text("X : " + nf(circleX,1,1) + "   Y : " + nf(circleY,1,1), 20, 42);
-  text("dX: " + nf(dx,1,2)      + "   dY: " + nf(dy,1,2),       20, 64);
-  fill(120, 180, 255);
+  text("── ANALOG AXES (Sliders) ──", 20, 115);
+
+  int numSliders = gamepad.getNumberOfSliders();
+  for (int i = 0; i < numSliders; i++) {
+    ControlSlider s = gamepad.getSlider(i);
+    float val = s.getValue();
+
+    // Label
+    fill(160, 200, 255);
+    text(String.format("  [%d] %-6s : %+.3f", i, s.getName(), val), 20, 140 + i * 28);
+
+    // Bar background
+    noStroke();
+    fill(50, 50, 70);
+    rect(200, 127 + i * 28, 300, 16, 4);
+
+    // Bar fill (center = 0, extends left or right)
+    float barCenter = 200 + 150;
+    float barLen    = val * 150;
+    fill(val > 0.12 || val < -0.12 ? color(80, 200, 120) : color(80, 120, 180));
+    rect(barCenter, 127 + i * 28, barLen, 16, 4);
+
+    // Center marker
+    stroke(255, 255, 255, 80);
+    strokeWeight(1);
+    line(barCenter, 125 + i * 28, barCenter, 145 + i * 28);
+    noStroke();
+  }
+
+  // ── Buttons ──
+  int buttonTop = 145 + numSliders * 28 + 20;
+  fill(200, 230, 255);
+  textSize(13);
+  text("── BUTTONS ──", 20, buttonTop);
+
+  int numButtons = gamepad.getNumberOfButtons();
+  int cols       = 6;
+  int btnSize    = 52;
+  int btnPad     = 10;
+
+  for (int i = 0; i < numButtons; i++) {
+    ControlButton b = gamepad.getButton(i);
+    boolean pressed = b.pressed();
+
+    int col = i % cols;
+    int row = i / cols;
+    int bx  = 20  + col * (btnSize + btnPad);
+    int by  = buttonTop + 18 + row * (btnSize + btnPad);
+
+    // Button box
+    noStroke();
+    fill(pressed ? color(80, 220, 120) : color(50, 50, 70));
+    rect(bx, by, btnSize, btnSize, 6);
+
+    // Button label
+    fill(pressed ? color(20, 20, 20) : color(160, 200, 255));
+    textSize(10);
+    textAlign(CENTER, CENTER);
+    text(b.getName(), bx + btnSize/2, by + btnSize/2 - 6);
+    textSize(9);
+    fill(pressed ? color(20, 40, 20) : color(100, 140, 180));
+    text(pressed ? "PRESSED" : "---", bx + btnSize/2, by + btnSize/2 + 8);
+  }
+
+  // ── Footer hint ──
+  textAlign(LEFT);
+  fill(100, 140, 180);
   textSize(11);
-  text((gamepad != null ? "Left Stick" : "Arrow Keys / WASD") + "  to move", 20, 90);
+  text("Press 1-9 keys to switch device index if wrong controller is shown", 20, height - 15);
+}
+
+// Switch device manually with number keys
+void keyPressed() {
+  if (key >= '0' && key <= '9') {
+    int idx = key - '0';
+    if (idx < control.getNumberOfDevices()) {
+      try {
+        gamepad = control.getDevice(idx);
+        selectedDeviceIndex = idx;
+        println("Switched to device [" + idx + "]: " + gamepad.getName());
+      }
+      catch (Exception e) {
+        println("Could not switch: " + e.getMessage());
+      }
+    }
+  }
 }
