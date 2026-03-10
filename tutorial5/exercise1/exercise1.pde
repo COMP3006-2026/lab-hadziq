@@ -7,6 +7,7 @@ so that shape 1 or shape 2 can be picked up respectively.
 int[] x = {200, 440}; // the x values of rectangle and circle
 int[] y = {240, 240};
 int n = 1;
+boolean[] keys = new boolean[256]; // tracks held keys
 
 void setup() {
   size(640, 480);
@@ -18,23 +19,23 @@ void draw() {
   
   if (keyPressed) {
     // OBJECT SELECTION
-    if (key == '1') n = 1;
-    else if (key == '2') n = 2;
+    if (keys['1']) n = 1;
+    else if (keys['2']) n = 2;
     
     //LEFT 37 x--
-    if (keyCode == 37) {
+    if (keys[37]) {
       x[n-1]-=5;
     }
     //UP 38 y--
-    if (keyCode == 38) {
+    if (keys[38]) {
       y[n-1]-=5;
     }
     //RIGHT 39 x++
-    if (keyCode == 39) {
+    if (keys[39]) {
       x[n-1]+=5;
     }
     //DOWN 40 y++
-    if (keyCode == 40) {
+    if (keys[40]) {
       y[n-1]+=5;
     }
   }
@@ -43,27 +44,5 @@ void draw() {
   circle(x[2-1], y[2-1], 100);
 }
 
-/*
-void keyPressed() {
-  // OBJECT SELECTION
-  if (key == '1') n = 1;
-  else if (key == '2') n = 2;
-  
-  //LEFT 37 x--
-  if (keyCode == 37) {
-    x[n-1]-=5;
-  }
-  //UP 38 y--
-  if (keyCode == 38) {
-    y[n-1]-=5;
-  }
-  //RIGHT 39 x++
-  if (keyCode == 39) {
-    x[n-1]+=5;
-  }
-  //DOWN 40 y++
-  if (keyCode == 40) {
-    y[n-1]+=5;
-  }
-}
-*/
+void keyPressed()  { if (keyCode < 256) keys[keyCode] = true; }
+void keyReleased() { if (keyCode < 256) keys[keyCode] = false; }
