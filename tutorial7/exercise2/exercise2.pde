@@ -14,12 +14,13 @@ void setup() {
   }
   moon = loadImage("../moon-icon.png");
   moon.resize(50,50);
-  frameRate(15);
+  frameRate(30);
   imageMode(CENTER);
 }
 
 void draw() {
-  background(0);
+  fill(0, 25);
+  rect(0, 0, width, height);
   moonx = sin(angle) * dmoontoearth + 250;
   moony = cos(angle) * dmoontoearth * 0.2 + 250;
   
