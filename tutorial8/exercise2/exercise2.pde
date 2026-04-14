@@ -10,14 +10,17 @@ void draw() {
   rotateY(map(mouseX, 0, width, -PI, PI));
   rotateX(map(mouseY, 0, height, -PI, PI));
   noStroke();
+  
   beginShape();
   for (int i = 0; i < 5; i++) {
-    float angle = TWO_PI / 5 * i - HALF_PI;
+    float angle = TWO_PI / 5 * i; // - HALF_PI;
     float x = cos(angle) * 150;
     float y = sin(angle) * 150;
     vertex(x, y);
+    print("\n" + (i+1) + ") angle = " + degrees(angle) + " | x = " + x + " | y = " + y);
   }
   endShape(CLOSE);
+  
   stroke(255);
   line(0, 0, -200, 0, 0, 200);
 }

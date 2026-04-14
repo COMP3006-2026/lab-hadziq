@@ -8,7 +8,7 @@ boolean shuttleForward = true;
 
 void setup() {
   size(400, 400, P3D);
-  cam = new PeasyCam(this, 500);
+  cam = new PeasyCam(this, 800);
 }
 
 void draw() {
@@ -23,7 +23,7 @@ void draw() {
   // Moon
   pushMatrix();
   rotateY(moonAngle);
-  translate(200, 0, 0);
+  translate(600, 0, 0);
   fill(180);
   sphere(30);
   popMatrix();
@@ -31,7 +31,7 @@ void draw() {
   // Shuttle
   pushMatrix();
   rotateY(moonAngle * shuttleT);
-  float x = lerp(90, 170, shuttleT);
+  float x = lerp(90, 570, shuttleT);
   translate(x, 0, 0);
   fill(255, 200, 0);
   box(15, 8, 25);
