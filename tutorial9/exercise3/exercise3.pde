@@ -20,16 +20,6 @@ void draw() {
   background(210, 220, 235);
   lights();
   
-  // Ground plane
-  pushMatrix();
-  translate(width/2, height/2 + 60, 0);
-  fill(120, 140, 110);
-  noStroke();
-  rotateX(HALF_PI);
-  rectMode(CENTER);
-  rect(0, 0, 1200, 800);
-  popMatrix();
-  
   // Camera orbit
   translate(width/2, height/2, 0);
   if (mousePressed) {

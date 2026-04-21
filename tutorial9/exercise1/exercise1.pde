@@ -7,9 +7,6 @@ You can use primitives or shape3D library.
 int numShapes = 10;
 Shape3D[] shapes = new Shape3D[numShapes];
 
-float angleX = 0;
-float angleY = 0;
-
 void setup() {
   size(800, 600, P3D);
   generateShapes();
@@ -19,15 +16,8 @@ void draw() {
   background(25, 30, 45);
   lights();
   
-  // Center the scene and apply mouse-based rotation
+  // Center the scene
   translate(width/2, height/2, 0);
-  
-  if (mousePressed) {
-    angleY = map(mouseX, 0, width, -PI, PI);
-    angleX = map(mouseY, 0, height, -PI, PI);
-  }
-  rotateX(angleX);
-  rotateY(angleY);
   
   // Draw all shapes
   for (Shape3D s : shapes) {
