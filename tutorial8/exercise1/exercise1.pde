@@ -10,6 +10,7 @@ void draw() {
   rotateY(map(mouseX, 0, width, -PI, PI));
   rotateX(map(mouseY, 0, height, -PI, PI));
   noStroke();
+  
   //ellipse(0, 0, 300, 300);
   circle(0, 0, 300);
   
