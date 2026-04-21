@@ -13,7 +13,7 @@ PeasyCam cam;
 PGraphics pg;
 
 // Room parts
-Box floor, ceiling, wallN, wallS, wallE, wallW;
+Box floor, wallN, wallS, wallE, wallW;
 
 // Table: top + 4 legs
 Box tableTop;
@@ -24,7 +24,7 @@ Box chairSeat, chairBack;
 Box[] chairLegs = new Box[4];
 
 // Textures
-PImage brickImg, woodImg, floorImg, ceilingImg;
+PImage brickImg, woodImg, floorImg;
 
 // Scene dimensions
 float roomSize = 600;
@@ -41,7 +41,6 @@ void setup() {
   brickImg   = loadImage("data/brick.jpg");
   woodImg    = loadImage("data/wood.jpg");
   floorImg   = loadImage("data/floor.jpg");
-  ceilingImg = loadImage("data/ceiling.jpg");
   
   buildRoom();
   buildTable();
@@ -54,12 +53,6 @@ void buildRoom() {
   floor.texture(floorImg);
   floor.moveTo(0, roomHeight/2, 0);
   floor.drawMode(Shape3D.TEXTURE);
-  
-  // Ceiling at y = -roomHeight/2
-  ceiling = new Box(roomSize, 10, roomSize);
-  ceiling.texture(ceilingImg);
-  ceiling.moveTo(0, -roomHeight/2, 0);
-  ceiling.drawMode(Shape3D.TEXTURE);
   
   // Four brick walls
   // North wall (back, -Z side)
@@ -182,12 +175,12 @@ void draw() {
   pg.background(20);
   
   // Warm interior lighting — one ceiling light + soft ambient
-  pg.ambientLight(80, 75, 70);
-  pg.pointLight(255, 240, 210, 0, -roomHeight/2 + 50, 0);
+  //pg.ambientLight(80, 75, 70);
+  //pg.pointLight(255, 240, 210, 0, -roomHeight/2 + 50, 0);
+  pg.lights();
   
   // Draw the room
   floor.draw(pg);
-  ceiling.draw(pg);
   wallN.draw(pg);
   wallS.draw(pg);
   wallE.draw(pg);

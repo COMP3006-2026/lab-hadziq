@@ -31,6 +31,7 @@ void setup() {
   earth = new Ellipsoid(50, 50, 50);
   earthImg = loadImage("data/earth.jpg");
   earth.texture(earthImg);
+  earth.moveTo(0, 0, 0);
   earth.drawMode(Shape3D.TEXTURE);
   
   // --- Moon ---
@@ -42,7 +43,7 @@ void setup() {
   
   // --- Star background ---
   stars = new Ellipsoid(1333, 50, 50);
-  starsImg = loadImage("data/stars01.jpg");
+  starsImg = loadImage("data/stars.jpg");
   stars.texture(starsImg);
   stars.drawMode(Shape3D.TEXTURE);
   
