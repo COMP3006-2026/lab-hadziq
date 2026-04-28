@@ -1,7 +1,6 @@
 /*
-Add the function so that the picked car moves 
-in 2-dimensional space according to the mouse cursor 
-when the mouse is dragging.
+Modify question 4 so that the movement 
+can be made for the z-dimension (depth).
 */
 
 import shapes3d.*;
@@ -152,21 +151,39 @@ void applySelectionColors() {
   }
 }
 
-// Accumulated screen-plane Y offset per car (X/Z stay in carPositions[])
-float[] carYOffset = new float[5];
-
-// Translate all 7 parts of car c by (dx, dy) in world coordinates,
-// where dx/dy come straight from screen-space mouse deltas.
-void moveCarScreen(int c, float dx, float dy) {
+// Reposition all 7 parts of car c so its chassis sits at (ox, oz),
+// scaled by the car's stored scale factor.
+void moveCar(int c, float ox, float oz) {
+  float s = carPositions[c][2];
   int base = c * partsPerCar;
-  for (int i = 0; i < partsPerCar; i++) {
-    PVector p = parts[base + i].getPosVec();
-    parts[base + i].moveTo(p.x + dx, p.y + dy, p.z);
+  
+  // 1. Chassis
+  parts[base + 0].moveTo(ox, 0, oz);
+  
+  // 2. Cabin
+  parts[base + 1].moveTo(ox - 10 * s, -47 * s, oz);
+  
+  // 3-6. Wheels
+  float wheelY       = 30.0 * s;
+  float wheelXOffset = 75.0 * s;
+  float wheelZOffset = 50.0 * s;
+  
+  float[][] wheelPos = {
+    {ox - wheelXOffset, wheelY, oz + wheelZOffset},
+    {ox - wheelXOffset, wheelY, oz - wheelZOffset},
+    {ox + wheelXOffset, wheelY, oz + wheelZOffset},
+    {ox + wheelXOffset, wheelY, oz - wheelZOffset}
+  };
+  for (int i = 0; i < 4; i++) {
+    parts[base + 2 + i].moveTo(wheelPos[i][0], wheelPos[i][1], wheelPos[i][2]);
   }
   
-  // Keep stored x and y-offset in sync so future operations stay consistent
-  carPositions[c][0] += dx;
-  carYOffset[c]      += dy;
+  // 7. Front lights
+  parts[base + 6].moveTo(ox - 115 * s, -5 * s, oz);
+  
+  // Update stored position so subsequent drags stay consistent
+  carPositions[c][0] = ox;
+  carPositions[c][1] = oz;
 }
 
 void mousePressed() {
@@ -202,13 +219,18 @@ void mousePressed() {
 void mouseDragged() {
   if (!dragging || selectedCar < 0) return;
   
+  // Convert screen-space mouse delta to world-space movement.
+  // Because the scene is translated to (width/2, height/2) and rotated,
+  // we approximate: dx on screen -> dx in world X, dy on screen -> dz in world.
+  // Using deltas (mouseX-pmouseX) keeps the car under the cursor smoothly
+  // without solving the full inverse projection.
   float dx = mouseX - pmouseX;
   float dy = mouseY - pmouseY;
   
-  // Move in the screen plane: dx -> world X, dy -> world Y.
-  // We need to update the y position of every part of the car,
-  // not just shift a single anchor, so we move all 7 parts directly.
-  moveCarScreen(selectedCar, dx, dy);
+  float newX = carPositions[selectedCar][0] + dx;
+  float newZ = carPositions[selectedCar][1] + dy;
+  
+  moveCar(selectedCar, newX, newZ);
 }
 
 void mouseReleased() {
