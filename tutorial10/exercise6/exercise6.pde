@@ -144,6 +144,16 @@ void placeCar(int c, float ox, float oy, float oz, float s, float rotY, float al
     {-115*s,-5*s,     0}      // lights
   };
   
+  if (rotY > 0) {
+    parts[base].rotateByY(rotY);
+    parts[base+1].rotateByY(rotY);
+  }
+  
+  if (s > 0) {
+    parts[base].scale(s);
+    parts[base+1].scale(s);
+  }
+  
   float cosR = cos(rotY);
   float sinR = sin(rotY);
   
